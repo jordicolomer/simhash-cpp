@@ -1,3 +1,7 @@
+This is a patch for the Simhash library that solves the problem of having similar hashes when two documents are completely different but share the same blob of text with a single word being repeated.
+
+It solves the problem by taking the logarithm of the count of tokens when calculating the Simhash.
+
 Simhash Near-Duplicate Detection
 ================================
 [![Build Status](https://travis-ci.org/seomoz/simhash-cpp.svg?branch=master)](https://travis-ci.org/seomoz/simhash-cpp)
