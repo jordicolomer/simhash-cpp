@@ -1,7 +1,9 @@
 #ifndef SIMHASH_HASH_H
 #define SIMHASH_HASH_H
 
+#include <math.h>
 #include <vector>
+#include <map>
 
 /* Simply holds references to all of our hash functions */
 #include "hashes/jenkins.h"
@@ -28,6 +30,7 @@ namespace Simhash {
 
         std::vector<size_t> bit_counts;
         size_t hash_count;
+        std::map<hash_t,int> m;
     public:
         Simhash(): bit_counts(BITS, 0), hash_count(0) {}
 
@@ -35,16 +38,27 @@ namespace Simhash {
          * Updates bit counts with pre-calculated hash.
          */
         virtual void update(hash_t hash) /* override */ {
-            ++hash_count;
-            for (int j = BITS - 1; j >= 0; --j) {
-                bit_counts[j] += hash & 1;
-                hash >>= 1;
+            if ( m.find(hash) == m.end() ) {
+                m[hash]=0;
             }
+            m[hash]=m[hash]+1;
+            ++hash_count;
         }
 
         /* With bit counts appropriately tallied, create a 1 bit for each of
          * the counts that's over threshold. That result is the hash. */
         virtual hash_t result() /* override */ {
+            for(std::map<hash_t,int>::iterator iter = m.begin(); iter != m.end(); ++iter)
+            {
+                hash_t hash =  iter->first;
+                int n = iter->second;
+				n = int(log(n)*2+1);
+				//std::cout << n << " " << int(log(n)+1) << std::endl;
+                for (int j = BITS - 1; j >= 0; --j) {
+                    bit_counts[j] += (hash & 1)*n;
+                    hash >>= 1;
+                }
+            }
             size_t threshold = hash_count / 2;
             hash_t hash(0);
             for (size_t j = 0; j < BITS; ++j) {
